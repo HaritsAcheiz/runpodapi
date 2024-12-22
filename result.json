@@ -1,0 +1,42 @@
+[
+	{
+		"provider": "",
+		"location":	{
+			"city": "",
+			"country": "",
+			"region": ""
+		},
+		"networking": {
+			"ports": "",
+			"receive": "",
+			"send": ""
+		},
+		"specs": {
+			"cpu": {
+				"amount": "",
+				"price": "",
+				"type": ""
+			},
+			"gpu": {
+				"model-name": {
+					"amount": "",
+					"price": ""
+				}
+			},
+			"ram": {
+				"amount": "",
+				"price": ""
+			},
+			"storage": {
+				"amount": "",
+				"price": "",
+			}
+		},
+		"status": {
+			"listed": "",
+			"online": "",
+			"report": "",
+			"uptime": ""
+		}
+	}
+]
