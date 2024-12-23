@@ -2,6 +2,7 @@ from httpx import Client
 from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -22,7 +23,9 @@ class RunpodAPI:
 			except Exception as e:
 				print(e)
 				print(f'Retry...{str(i + 1)}/3')
+				time.sleep(3)
 				continue
+
 		print('Request Failed')
 
 	def get_cpuTypes(self):
@@ -96,12 +99,21 @@ class RunpodAPI:
 		query = """
 			query myself {
 				myself {
-					pods {
+					id
+					pods{
 						id
 					}
-					id
+					machines{
+						id
+					}
+					machinesSummary{
+						id
+					}
 					authId
 					email
+					containerRegistryCreds{
+						id
+					}
 					currentSpendPerHr
 					machineQuota
 					referralEarned
@@ -111,11 +123,50 @@ class RunpodAPI:
 					stripeSavedPaymentLast4
 					templateEarned
 					multiFactorEnabled
-					notifyPodsStale
-					notifyPodsGeneral
-					notifyLowBalance
-					creditAlertThreshold
-					notifyOther
+					machineEarnings{
+						machineId
+					}
+					datacenters{
+						id
+						name
+						location
+						storage{
+							hostname
+							ips
+							pw
+							type
+							user
+						}
+						storageSupport
+						listed
+						gpuAvailability{
+							available
+							stockStatus
+							gpuTypeId
+							gpuType{
+								maxGpuCount
+								maxGpuCountCommunityCloud
+								maxGpuCountSecureCloud
+								minPodGpuCount
+								id
+								displayName
+								manufacturer
+								memoryInGb
+								cudaCores
+								secureCloud
+								communityCloud
+								securePrice
+								communityPrice
+								oneMonthPrice
+								threeMonthPrice
+								sixMonthPrice
+								oneWeekPrice
+								communitySpotPrice
+								secureSpotPrice
+							}
+						}
+						compliance
+					}
 				}
 			}
 		"""
@@ -208,16 +259,85 @@ class RunpodAPI:
 					id
 					name
 					location
+					storage{
+						hostname
+						ips
+						pw
+						type
+						user
+					}
 					storageSupport
 					listed
 					gpuAvailability{
 						available
 						stockStatus
 						gpuTypeId
-						gpuTypeDisplayName
-						displayName
-						id
+						gpuType{
+							maxGpuCount
+							maxGpuCountCommunityCloud
+							maxGpuCountSecureCloud
+							minPodGpuCount
+							id
+							displayName
+							manufacturer
+							memoryInGb
+							cudaCores
+							secureCloud
+							communityCloud
+							securePrice
+							communityPrice
+							oneMonthPrice
+							threeMonthPrice
+							sixMonthPrice
+							oneWeekPrice
+							communitySpotPrice
+							secureSpotPrice
+						}
 					}
+					compliance
+				}
+			}
+		"""
+
+		return self.send_request(payload={"query": query})
+
+	def get_cpu_flavor(self, SpecificsInput=None):
+		query = """
+			query cpuFlavors($input: SpecificsInput){
+				cpuFlavors{
+					id
+					groupId
+					groupName
+					displayName
+					minVcpu
+					maxVcpu
+					vcpuBurstable
+					ramMultiplier
+					diskLimitPerVcpu
+					specifics(input: $input){
+						stockStatus
+						securePrice
+						slsPrice
+					}
+				}
+			}
+		"""
+		variables = {
+			"input": SpecificsInput
+		}
+
+		return self.send_request(payload={"query": query, "variables": variables})
+
+	def get_datacenter_storage(self):
+		query = """
+			query dataCenterStorageList {
+				dataCenterStorageList {
+					mnt
+					pw
+					servers
+					type
+					versions
+					primary
 				}
 			}
 		"""

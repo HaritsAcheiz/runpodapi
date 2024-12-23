@@ -1,7 +1,9 @@
 import pandas as pd
+import ast
 
 
 def dc_to_pandas(response):
+	print(response)
 	datacenters = response['data']['dataCenters']
 	records = list()
 
@@ -15,6 +17,7 @@ def dc_to_pandas(response):
 		availables = list()
 		stock_status = list()
 		type_ids = list()
+		types = list()
 		type_display_names = list()
 		display_names = list()
 		ids = list()
@@ -22,14 +25,15 @@ def dc_to_pandas(response):
 			availables.append(item['available'])
 			stock_status.append(item['stockStatus'])
 			type_ids.append(item['gpuTypeId'])
+			types.append(item['gpuType'])
 			type_display_names.append(item['gpuTypeDisplayName'])
 			display_names.append(item['displayName'])
 			ids.append(item['id'])
 		data['gpu_available'] = availables
-		data['gpu_stock_status'] = stock_status
-		data['gpu_type_id'] = type_ids
-		data['gpu_type_display_name'] = type_display_names
-		data['gpu_display_name'] = display_names
+		data['gpu_stockStatus'] = stock_status
+		data['gpu_typeId'] = type_ids
+		data['gpu_typeDisplayName'] = type_display_names
+		data['gpu_displayName'] = display_names
 		data['gpu_id'] = ids
 
 		records.append(data.copy())
@@ -40,114 +44,38 @@ def dc_to_pandas(response):
 
 
 def gpu_to_pandas(response):
-	datacenters = response['data']['dataCenters']
-	records = list()
+	records = response['data']['gpuTypes']
+	gpu_df = pd.DataFrame.from_records(records)
 
-	for datacenter in datacenters:
-		data = dict()
-		data['provider'] = '' #datacenter['']
-
-		location = {
-			"city": '', #datacenter[''],
-			"country": datacenter['location'],
-			"region": '' #datacenter['']
-		}
-		data['location'] = location
-
-		networking = {
-			"ports": '', #datacenter[''],
-			"receive": '', #datacenter[''],
-			"send": '' #datacenter['']
-		}
-		data['networking'] = networking
-
-		specs = {
-			"cpu": {
-				"amount": '', #datacenter[''],
-				"price": '', #datacenter[''],
-				"type": '' #datacenter['']
-			},
-			"gpu": {
-				"model-name": {
-					"amount": '', #datacenter[''],
-					"price": '' #datacenter['']
-				}
-			},
-			"ram": {
-				"amount": '', #datacenter[''],
-				"price": '' #datacenter['']
-			},
-			"storage": {
-				"amount": '', #datacenter[''],
-				"price": '', #datacenter['']
-			}
-		}
-		data['specs'] = specs
-
-		status = {
-			"listed": datacenter['listed'],
-			"online": '', #datacenter[''],
-			"report": '', #datacenter[''],
-			"uptime": '' #datacenter['']
-		}
-		data['status'] = status
-		records.append(data.copy())
-
-	return records
+	return gpu_df
 
 
 def cpu_to_pandas(response):
-	datacenters = response['data']['dataCenters']
-	records = list()
+	records = response['data']['cpuTypes']
+	cpu_df = pd.DataFrame.from_records(records)
 
-	for datacenter in datacenters:
-		data = dict()
-		data['provider'] = '' #datacenter['']
+	return cpu_df
 
-		location = {
-			"city": '', #datacenter[''],
-			"country": datacenter['location'],
-			"region": '' #datacenter['']
-		}
-		data['location'] = location
 
-		networking = {
-			"ports": '', #datacenter[''],
-			"receive": '', #datacenter[''],
-			"send": '' #datacenter['']
-		}
-		data['networking'] = networking
+def pod_to_pandas(response):
+	print(response)
 
-		specs = {
-			"cpu": {
-				"amount": '', #datacenter[''],
-				"price": '', #datacenter[''],
-				"type": '' #datacenter['']
-			},
-			"gpu": {
-				"model-name": {
-					"amount": '', #datacenter[''],
-					"price": '' #datacenter['']
-				}
-			},
-			"ram": {
-				"amount": '', #datacenter[''],
-				"price": '' #datacenter['']
-			},
-			"storage": {
-				"amount": '', #datacenter[''],
-				"price": '', #datacenter['']
-			}
-		}
-		data['specs'] = specs
 
-		status = {
-			"listed": datacenter['listed'],
-			"online": '', #datacenter[''],
-			"report": '', #datacenter[''],
-			"uptime": '' #datacenter['']
-		}
-		data['status'] = status
-		records.append(data.copy())
+def cpu_flavor_to_pandas(response):
+	records = response['data']['cpuFlavors']
+	cpu_flavors_df = pd.DataFrame.from_records(records)
 
-	return records
+	return cpu_flavors_df
+
+
+def transform():
+	dc_df = pd.read_csv('data/dc.csv', usecols=['id', 'location', 'listed', 'gpu_id'])
+	gpu_df = pd.read_csv('data/gpu.csv', usecols=['maxGpuCount', 'id', 'memoryInGb', 'securePrice'])
+
+	dc_df['gpu_id'] = dc_df['gpu_id'].apply(ast.literal_eval)
+	dc_df = dc_df.explode('gpu_id', ignore_index=True)
+
+	first_enhanced_df = dc_df.merge(gpu_df, left_on='gpu_id', right_on='id', how='left')
+	first_enhanced_df.rename({'id_x': 'dc_id', 'id_y': 'gpu_id'})
+
+	first_enhanced_df.to_csv('check.csv', index=False)
