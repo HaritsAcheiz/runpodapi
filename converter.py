@@ -12,6 +12,7 @@ def dc_to_pandas(response):
 		data['id'] = datacenter['id']
 		data['name'] = datacenter['name']
 		data['location'] = datacenter['location']
+		data['storage'] = datacenter['storage']
 		data['storageSupport'] = datacenter['storageSupport']
 		data['listed'] = datacenter['listed']
 		availables = list()
@@ -35,6 +36,23 @@ def dc_to_pandas(response):
 		data['gpu_typeDisplayName'] = type_display_names
 		data['gpu_displayName'] = display_names
 		data['gpu_id'] = ids
+
+		records.append(data.copy())
+
+	dc_df = pd.DataFrame.from_records(records)
+
+	return dc_df
+
+
+def custom_dc_to_pandas(response):
+	print(response)
+	datacenters = response['data']['dataCenters']
+	records = list()
+
+	for datacenter in datacenters:
+		data = dict()
+		data['id'] = datacenter['id']
+		data['location'] = datacenter['location']
 
 		records.append(data.copy())
 
@@ -68,14 +86,8 @@ def cpu_flavor_to_pandas(response):
 	return cpu_flavors_df
 
 
-def transform():
-	dc_df = pd.read_csv('data/dc.csv', usecols=['id', 'location', 'listed', 'gpu_id'])
-	gpu_df = pd.read_csv('data/gpu.csv', usecols=['maxGpuCount', 'id', 'memoryInGb', 'securePrice'])
+def machine_to_pandas(response):
+	records = response['data']['machines']
+	machines_df = pd.DataFrame.from_records(records)
 
-	dc_df['gpu_id'] = dc_df['gpu_id'].apply(ast.literal_eval)
-	dc_df = dc_df.explode('gpu_id', ignore_index=True)
-
-	first_enhanced_df = dc_df.merge(gpu_df, left_on='gpu_id', right_on='id', how='left')
-	first_enhanced_df.rename({'id_x': 'dc_id', 'id_y': 'gpu_id'})
-
-	first_enhanced_df.to_csv('check.csv', index=False)
+	return machines_df

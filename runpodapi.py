@@ -17,7 +17,6 @@ class RunpodAPI:
 			try:
 				with Client() as client:
 					response = client.post(self.base_api, params={'api_key': self.api_key}, json=payload)
-				response.raise_for_status()
 
 				return response.json()
 			except Exception as e:
@@ -44,28 +43,10 @@ class RunpodAPI:
 
 		return self.send_request(payload={"query": query})
 
-	def get_gpuTypes(self, GpuTypeFilter=None):
+	def get_gpuTypes(self):
 		query = """
-			query gpuTypes ($input: GpuTypeFilter) {
-				gpuTypes(input: $input) {
-					lowestPrice {
-						gpuName
-						gpuTypeId
-						minimumBidPrice
-						uninterruptablePrice
-						minMemory
-						minVcpu
-						rentalPercentage
-						rentedCount
-						totalCount
-						stockStatus
-						minDownload
-						minDisk
-						minUpload
-						countryCode
-						supportPublicIp
-						compliance
-					}
+			query gpuTypes{
+				gpuTypes{
 					maxGpuCount
 					maxGpuCountCommunityCloud
 					maxGpuCountSecureCloud
@@ -89,11 +70,7 @@ class RunpodAPI:
 			}
 		"""
 
-		variables = {
-			"input": GpuTypeFilter
-		}
-
-		return self.send_request(payload={"query": query, "variables": variables})
+		return self.send_request(payload={"query": query})
 
 	def get_myself(self):
 		query = """
@@ -174,83 +151,14 @@ class RunpodAPI:
 
 	def get_pods(self, PodFilter=None):
 		query = """
-			query pod($input: PodFilter) {
-				pod(input: $input) {
-					lowestBidPriceToResume
-					aiApiId
-					apiKey
-					consumerUserId
-					containerDiskInGb
-					containerRegistryAuthId
-					costMultiplier
-					costPerHr
-					createdAt
-					adjustedCostPerHr
-					desiredStatus
-					dockerArgs
-					dockerId
-					env
-					gpuCount
-					gpuPowerLimitPercent
-					gpus {
-						id
-					}
+			query pod{
+				pod{
 					id
-					imageName
-					lastStatusChange
-					locked
-					machineId
-					memoryInGb
-					name
-					podType
-					port
-					ports
-					registry {
-						auth
-					}
-					templateId
-					uptimeSeconds
-					vcpuCount
-					version
-					volumeEncrypted
-					volumeInGb
-					volumeKey
-					volumeMountPath
-					lastStartedAt
-					cpuFlavorId
-					machineType
-					slsVersion
-					networkVolumeId
-					cpuFlavor {
-						id
-					}
-					machine {
-						id
-					}
-					latestTelemetry {
-						state
-					}
-					endpoint {
-						id
-					}
-					networkVolume {
-						id
-					}
-					savingsPlans {
-						pod
-					}
-					runtime {
-						container
-					}
 				}
 			}
 		"""
 
-		variables = {
-			"input": PodFilter
-		}
-
-		return self.send_request(payload={"query": query, "variables": variables})
+		return self.send_request(payload={"query": query})
 
 	def get_datacenters(self):
 		query = """
@@ -265,6 +173,14 @@ class RunpodAPI:
 						pw
 						type
 						user
+						list{
+							mnt
+							pw
+							servers
+							type
+							versions
+							primary
+						}
 					}
 					storageSupport
 					listed
@@ -293,6 +209,9 @@ class RunpodAPI:
 							communitySpotPrice
 							secureSpotPrice
 						}
+						gpuTypeDisplayName
+						displayName
+						id
 					}
 					compliance
 				}
@@ -328,16 +247,117 @@ class RunpodAPI:
 
 		return self.send_request(payload={"query": query, "variables": variables})
 
-	def get_datacenter_storage(self):
+	def get_machine(self):
 		query = """
-			query dataCenterStorageList {
-				dataCenterStorageList {
-					mnt
-					pw
-					servers
-					type
-					versions
-					primary
+			query machines {
+				machines {
+					machineType
+					gpuTypeId
+					gpuTotal
+					cpuTypeId
+					cpuCount
+					memoryTotal
+					diskTotal
+					vcpuTotal
+					secureCloud
+					gpuCloudPrice
+					location
+				}
+			}
+		"""
+
+		return self.send_request(payload={"query": query})
+
+	def get_podTemplateId(self):
+		query = """
+			query podTemplates{
+				podTemplates{
+					id
+				}
+			}
+		"""
+
+		return self.send_request(payload={"query": query})
+
+	def get_gpuTypeById(self, lowestPriceInput, gpuTypesInput):
+		query = """
+			query SecureGpuTypes($lowestPriceInput: GpuLowestPriceInput, $gpuTypesInput: GpuTypeFilter) {
+				gpuTypes (input: $gpuTypesInput){
+					lowestPrice(input: $lowestPriceInput) {
+						minimumBidPrice
+						uninterruptablePrice
+						minVcpu
+						minMemory
+						stockStatus
+						compliance
+						maxUnreservedGpuCount
+						__typename
+					}
+					id
+					displayName
+					memoryInGb
+					securePrice
+					communityPrice
+					oneMonthPrice
+					oneWeekPrice
+					threeMonthPrice
+					sixMonthPrice
+					secureSpotPrice
+					__typename
+				}
+			}
+		"""
+
+		variables = {
+			"gpuTypesInput": gpuTypesInput,
+			"lowestPriceInput": lowestPriceInput
+		}
+
+		return self.send_request(payload={"query": query, "variables": variables})
+
+	def get_podTemplate(self, podTemplate):
+		query = """
+			query getPodTemplate($id: String!) {
+				podTemplate(id: $id) {
+					advancedStart
+					containerDiskInGb
+					containerRegistryAuthId
+					dockerArgs
+					env {
+						key
+						value
+						__typename
+					}
+					id
+					imageName
+					isPublic
+					isServerless
+					name
+					ports
+					readme
+					startJupyter
+					startScript
+					startSsh
+					volumeInGb
+					volumeMountPath
+					category
+					__typename
+				}
+			}
+		"""
+
+		variables = podTemplate
+
+		return self.send_request(payload={"query": query, "variables": variables})
+
+	# customs
+	def custom_get_datacenter(self):
+		query = """
+			query dataCenters {
+				dataCenters {
+					id
+					location
+					listed
 				}
 			}
 		"""
@@ -347,13 +367,13 @@ class RunpodAPI:
 
 if __name__ == '__main__':
 	api = RunpodAPI(api_key=os.getenv('API_KEY'))
-	print(api.get_cpuTypes())
+	# print(api.get_cpuTypes())
 	# print(api.get_myself())
 
 	# GpuTypeFilter = {"Id": "xyz789"}
-	print(api.get_gpuTypes())
+	# print(api.get_gpuTypes())
 
 	# PodFilter = {"podId": "xyz789"}
 	# print(api.get_pods())
 
-	print(api.get_datacenters())
+	# print(api.get_datacenters())

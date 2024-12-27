@@ -1,0 +1,72 @@
+{
+    "CA-MTL": {
+        "city": "Montreal",
+        "country": "Canada",
+        "region": "Canada"
+    },
+    "EU-CZ": {
+        "city": "",
+        "country": "Czech Republic",
+        "region": "Europe"
+    },
+    "EU-NL": {
+        "city": "",
+        "country": "Netherland",
+        "region": "Europe"
+    },
+    "EU-RO": {
+        "city": "",
+        "country": "Romania",
+        "region": "Europe"
+    },
+    "EU-SE": {
+        "city": "",
+        "country": "Sweden",
+        "region": "Europe"
+    },
+    "EUR-IS": {
+        "city": "",
+        "country": "Iceland",
+        "region": "Europe"
+    },
+    "EUR-NO": {
+        "city": "",
+        "country": "Norway",
+        "region": "Europe"
+    },
+    "SEA-SG": {
+        "city": "",
+        "country": "Singapore",
+        "region": "South East Asia"
+    },
+    "US-CA": {
+        "city": "",
+        "country": "United States",
+        "region": "California"
+    },
+    "US-GA": {
+        "city": "",
+        "country": "United States",
+        "region": "Georgia"
+    },
+    "US-IL": {
+        "city": "",
+        "country": "United States",
+        "region": "Illinois"
+    },
+    "US-KS": {
+        "city": "",
+        "country": "United States",
+        "region": "Kansas"
+    },
+    "US-OR": {
+        "city": "",
+        "country": "United States",
+        "region": "Oregon"
+    },
+    "US-TX": {
+        "city": "",
+        "country": "United States",
+        "region": "Texas"
+    }
+}
